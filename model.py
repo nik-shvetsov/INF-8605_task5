@@ -219,18 +219,22 @@ class ModelHandler():
         img = preproc_img.unsqueeze(0).type(torch.FloatTensor).to(device=self.device)
         with torch.no_grad():            
             logits = self.model(img)
-            (_, prediction) = logits.max(1)
+            probs = F.softmax(logits, dim=1)
+            (prob, prediction) = probs.max(1)
+            # (_, prediction) = logits.max(1)
+            
+            prob = float(prob)
             prediction = int(prediction)
             
             if show_results:
                 plt.figure(figsize=(10, 5))
-                plt.title(prediction) if label_dict is None else plt.title(f"{label_dict[int(prediction)]} - {prediction}")
+                plt.title(prediction) if label_dict is None else plt.title(f"{label_dict[prediction]} ({prediction}): {prob:.2f}")
                 plt.imshow(pil_img)
                 plt.show()
                 if fname is not None: plt.savefig(fname)
             
             else:
-                return prediction
+                return prediction, prob
 
 
 if __name__ == '__main__':
